@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ action }} Item{% endblock %}
+
+{% block content %}
+
+<div class="max-w-2xl mx-auto bg-white border border-gray-200 rounded-2xl p-8 shadow">
+
+    <h1 class="text-2xl font-bold text-gray-800 mb-1">{{ action }} Item</h1>
+    <p class="text-sm text-gray-400 mb-8">Fill in the details below and submit.</p>
+
+    <form method="POST" class="space-y-6">
+        {% csrf_token %}
+
+        {% for field in form %}
+        <div class="flex flex-col space-y-1">
+            <label class="text-sm font-semibold text-gray-700">{{ field.label }}</label>
+            {{ field }}
+            {% if field.errors %}
+                <p class="text-xs text-red-500">{{ field.errors.0 }}</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+
+        <div class="flex space-x-4 pt-6 border-t border-gray-100">
+            <button type="submit"
+                    class="px-6 py-3 bg-green-600 text-white font-bold rounded-xl hover:bg-green-700 transition text-sm">
+                ✅ {{ action }} Item
+            </button>
+            <a href="{% if item %}{% url 'item_detail' item.pk %}{% else %}{% url 'item_list' %}{% endif %}"
+               class="px-6 py-3 border border-gray-300 text-gray-500 hover:text-gray-800 rounded-xl font-medium transition text-sm">
+                Cancel
+            </a>
+        </div>
+    </form>
+
+</div>
+
+{% endblock %}

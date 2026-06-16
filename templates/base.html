@@ -1,0 +1,52 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}To-Do App{% endblock %}</title>
+
+    <link rel="stylesheet" href="{% static 'src/output.css' %}">
+</head>
+
+<body class="bg-gray-100 min-h-screen">
+
+    <!-- NAVBAR -->
+    <nav class="bg-blue-600 text-white shadow-md">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 class="text-2xl font-bold">📝 To-Do App</h1>
+
+            <div class="space-x-6">
+                <a href="{% url 'home' %}">Home</a>
+
+<a href="{% url 'task_list' %}">
+    My Tasks
+</a>
+
+<a href="{% url 'task_create' %}">
+    Add Task
+</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MESSAGES -->
+    {% if messages %}
+    <div class="max-w-4xl mx-auto mt-4 px-4">
+        {% for message in messages %}
+        <div class="bg-green-100 text-green-800 px-4 py-3 rounded-lg mb-3 shadow">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- PAGE CONTENT -->
+    <main class="container mx-auto px-6 py-8">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+</body>
+</html>
