@@ -2,6 +2,10 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from .models import Item
 from .forms import ItemForm
+from django.http import HttpResponse
+
+def item_list(request):
+    return HttpResponse("This is the task list page.")
 
 # ─── HOME ─────────────────────────────────────────────────────────────────────
 def home(request):
