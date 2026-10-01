@@ -1,0 +1,95 @@
+{% load humanize task_extras %}
+<article class="card group relative overflow-hidden p-4 transition duration-200
+                hover:-translate-y-0.5 hover:shadow-md
+                {% if task.is_overdue %}ring-1 ring-rose-200 dark:ring-rose-500/30{% endif %}">
+
+    <div class="flex items-start gap-3.5">
+
+        {# Complete / reopen toggle #}
+        <form method="post" action="{% url 'item_toggle' task.pk %}" class="pt-0.5">
+            {% csrf_token %}
+            <button type="submit"
+                    title="{% if task.completed %}Reopen task{% else %}Mark as done{% endif %}"
+                    class="grid h-6 w-6 shrink-0 place-items-center rounded-full border-2 transition
+                           {% if task.completed %}
+                               border-emerald-500 bg-emerald-500 text-white
+                           {% else %}
+                               border-slate-300 text-transparent hover:border-emerald-500 hover:text-emerald-500
+                               dark:border-slate-600
+                           {% endif %}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"
+                     stroke-linecap="round" stroke-linejoin="round" class="h-3 w-3">
+                    <path d="M20 6 9 17l-5-5"/>
+                </svg>
+                <span class="sr-only">Toggle completion</span>
+            </button>
+        </form>
+
+        <div class="min-w-0 flex-1">
+            <div class="flex flex-wrap items-center gap-2">
+                <a href="{% url 'item_detail' task.pk %}"
+                   class="truncate text-base font-semibold transition hover:text-brand-600
+                          {% if task.completed %}text-slate-400 line-through dark:text-slate-500{% endif %}">
+                    {{ task.title }}
+                </a>
+
+                <span class="chip {{ task.priority_badge_class }}">{{ task.get_priority_display }}</span>
+
+                {% if task.category %}
+                <span class="chip bg-slate-100 text-slate-600 ring-slate-200
+                             dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700">
+                    {{ task.category }}
+                </span>
+                {% endif %}
+            </div>
+
+            {% if task.description %}
+            <p class="mt-1.5 line-clamp-2 text-sm text-slate-500 dark:text-slate-400">
+                {{ task.description }}
+            </p>
+            {% endif %}
+
+            <div class="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-400">
+                {% if task.due_date %}
+                    {% if task.is_overdue %}
+                    <span class="font-semibold text-rose-600 dark:text-rose-400">
+                        ⚠ Overdue by {{ task.days_left|cut:'-' }} day{{ task.days_left|cut:'-'|pluralize }}
+                    </span>
+                    {% elif task.is_due_today %}
+                    <span class="font-semibold text-amber-600 dark:text-amber-400">⏰ Due today</span>
+                    {% else %}
+                    <span>📅 Due in {{ task.days_left }} day{{ task.days_left|pluralize }}</span>
+                    {% endif %}
+                {% else %}
+                <span>No due date</span>
+                {% endif %}
+
+                <span>Created {{ task.created_at|naturaltime }}</span>
+            </div>
+        </div>
+
+        {# Row actions #}
+        <div class="flex shrink-0 items-center gap-1 opacity-0 transition group-hover:opacity-100
+                    focus-within:opacity-100 max-sm:opacity-100">
+            <a href="{% url 'item_update' task.pk %}" title="Edit"
+               class="grid h-8 w-8 place-items-center rounded-lg text-slate-400 transition
+                      hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-white">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+                    <path d="M12 20h9"/>
+                    <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+                </svg>
+                <span class="sr-only">Edit</span>
+            </a>
+            <a href="{% url 'item_delete' task.pk %}" title="Delete"
+               class="grid h-8 w-8 place-items-center rounded-lg text-slate-400 transition
+                      hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-500/10 dark:hover:text-rose-400">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+                    <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>
+                </svg>
+                <span class="sr-only">Delete</span>
+            </a>
+        </div>
+    </div>
+</article>
