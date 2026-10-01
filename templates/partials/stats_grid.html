@@ -1,0 +1,22 @@
+{% load task_extras %}
+
+<div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+    <div class="card p-4">
+        <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Total</p>
+        <p class="mt-1 text-2xl font-bold">{{ stats.total }}</p>
+    </div>
+    <div class="card p-4">
+        <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Open</p>
+        <p class="mt-1 text-2xl font-bold text-brand-600 dark:text-brand-500">{{ stats.pending }}</p>
+    </div>
+    <div class="card p-4">
+        <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Done</p>
+        <p class="mt-1 text-2xl font-bold text-emerald-600 dark:text-emerald-400">{{ stats.completed }}</p>
+    </div>
+    <div class="card p-4">
+        <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Overdue</p>
+        <p class="mt-1 text-2xl font-bold {% if stats.overdue %}text-rose-600 dark:text-rose-400{% else %}text-slate-300 dark:text-slate-600{% endif %}">
+            {{ stats.overdue }}
+        </p>
+    </div>
+</div>
