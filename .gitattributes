@@ -1,0 +1,16 @@
+# Normalise line endings on checkout so the repo stays LF-only.
+* text=auto eol=lf
+
+*.py    text diff=python
+*.html  text diff=html
+*.css   text
+*.json  text
+*.md    text
+
+*.png   binary
+*.jpg   binary
+*.ico   binary
+*.sqlite3 binary
+
+package-lock.json -diff linguist-generated
+static/src/output.css linguist-generated
