@@ -1,33 +1,37 @@
 {% extends 'base.html' %}
 
-{% block title %}Delete {{ item.title }}{% endblock %}
+{% block title %}Delete "{{ item.title }}" — TaskFlow{% endblock %}
 
 {% block content %}
 
-<div class="max-w-md mx-auto bg-white border border-red-200 rounded-2xl p-8 shadow text-center">
+<div class="mx-auto max-w-md">
+    <div class="card animate-pop overflow-hidden text-center">
 
-    <div class="w-14 h-14 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6 text-2xl">
-        ⚠️
+        <div class="h-1.5 w-full bg-rose-500"></div>
+
+        <div class="p-8">
+            <div class="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-rose-100 text-2xl
+                        dark:bg-rose-500/15">
+                ⚠️
+            </div>
+
+            <h1 class="mt-5 text-xl font-extrabold tracking-tight">Delete this task?</h1>
+            <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                This can't be undone.
+            </p>
+
+            <p class="mt-4 rounded-xl bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700
+                      dark:bg-slate-800 dark:text-slate-200">
+                "{{ item.title }}"
+            </p>
+
+            <form method="post" class="mt-6 flex justify-center gap-3">
+                {% csrf_token %}
+                <button type="submit" class="btn-danger">Yes, delete it</button>
+                <a href="{% url 'item_detail' item.pk %}" class="btn-ghost">Cancel</a>
+            </form>
+        </div>
     </div>
-
-    <h1 class="text-xl font-bold text-gray-800 mb-2">Are you sure?</h1>
-    <p class="text-gray-500 text-sm mb-6">
-        You are about to permanently delete:<br>
-        <span class="font-bold text-red-500">"{{ item.title }}"</span>
-    </p>
-
-    <form method="POST" class="flex justify-center space-x-4">
-        {% csrf_token %}
-        <button type="submit"
-                class="px-5 py-2.5 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition text-sm">
-            Yes, Delete
-        </button>
-        <a href="{% url 'item_detail' item.pk %}"
-           class="px-5 py-2.5 border border-gray-300 text-gray-500 hover:text-gray-800 rounded-xl font-medium transition text-sm">
-            Cancel
-        </a>
-    </form>
-
 </div>
 
 {% endblock %}
