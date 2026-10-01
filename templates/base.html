@@ -1,52 +1,68 @@
 {% load static %}
-
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}To-Do App{% endblock %}</title>
+    <title>{% block title %}TaskFlow{% endblock %}</title>
+    <meta name="description" content="TaskFlow — a calm, fast to-do list built with Django and Tailwind CSS.">
 
     <link rel="stylesheet" href="{% static 'src/output.css' %}">
+
+    <script>
+        // Apply the saved theme before first paint to avoid a flash of the
+        // wrong colours.
+        (function () {
+            try {
+                var saved = localStorage.getItem('theme');
+                var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                if (saved === 'dark' || (!saved && prefersDark)) {
+                    document.documentElement.classList.add('dark');
+                }
+            } catch (e) { /* localStorage unavailable — fall back to light */ }
+        })();
+    </script>
 </head>
 
-<body class="bg-gray-100 min-h-screen">
+<body class="min-h-screen bg-slate-50 font-sans text-slate-800 antialiased
+             dark:bg-slate-950 dark:text-slate-100">
 
-    <!-- NAVBAR -->
-    <nav class="bg-blue-600 text-white shadow-md">
-        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
-            <h1 class="text-2xl font-bold">📝 To-Do App</h1>
+    {% include 'partials/navbar.html' %}
 
-            <div class="space-x-6">
-                <a href="{% url 'home' %}">Home</a>
+    {% include 'partials/messages.html' %}
 
-<a href="{% url 'task_list' %}">
-    My Tasks
-</a>
-
-<a href="{% url 'task_create' %}">
-    Add Task
-</a>
-            </div>
-        </div>
-    </nav>
-
-    <!-- MESSAGES -->
-    {% if messages %}
-    <div class="max-w-4xl mx-auto mt-4 px-4">
-        {% for message in messages %}
-        <div class="bg-green-100 text-green-800 px-4 py-3 rounded-lg mb-3 shadow">
-            {{ message }}
-        </div>
-        {% endfor %}
-    </div>
-    {% endif %}
-
-    <!-- PAGE CONTENT -->
-    <main class="container mx-auto px-6 py-8">
-        {% block content %}
-        {% endblock %}
+    <main class="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6 lg:py-12">
+        {% block content %}{% endblock %}
     </main>
 
+    <footer class="mx-auto w-full max-w-5xl px-4 pb-10 pt-4 text-center text-xs text-slate-400 sm:px-6">
+        <p>TaskFlow · built with Django &amp; Tailwind CSS</p>
+    </footer>
+
+    <script>
+        // Dark-mode toggle in the navbar.
+        (function () {
+            var button = document.getElementById('theme-toggle');
+            if (!button) return;
+
+            function sync() {
+                var dark = document.documentElement.classList.contains('dark');
+                button.setAttribute('aria-pressed', String(dark));
+                button.title = dark ? 'Switch to light mode' : 'Switch to dark mode';
+                var icon = button.querySelector('[data-theme-icon]');
+                if (icon) icon.textContent = dark ? '☀️' : '🌙';
+            }
+
+            button.addEventListener('click', function () {
+                var dark = document.documentElement.classList.toggle('dark');
+                try { localStorage.setItem('theme', dark ? 'dark' : 'light'); } catch (e) {}
+                sync();
+            });
+
+            sync();
+        })();
+    </script>
+
+    {% block extra_js %}{% endblock %}
 </body>
 </html>
