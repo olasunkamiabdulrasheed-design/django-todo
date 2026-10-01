@@ -1,0 +1,40 @@
+# ── Python ──────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# ── Virtual environments ────────────────────────────────────────────
+(myenv)/
+myenv/
+venv/
+env/
+.venv/
+
+# ── Django ──────────────────────────────────────────────────────────
+*.log
+db.sqlite3
+db.sqlite3-journal
+/media/
+/staticfiles/
+local_settings.py
+
+# ── Node / Tailwind ─────────────────────────────────────────────────
+node_modules/
+npm-debug.log*
+.npm/
+
+# ── Editors / OS ────────────────────────────────────────────────────
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+
+# ── Build scratch ───────────────────────────────────────────────────
+_stages/
