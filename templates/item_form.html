@@ -1,39 +1,88 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ action }} Item{% endblock %}
+{% block title %}{{ action }} task — TaskFlow{% endblock %}
 
 {% block content %}
 
-<div class="max-w-2xl mx-auto bg-white border border-gray-200 rounded-2xl p-8 shadow">
+<div class="mx-auto max-w-2xl">
 
-    <h1 class="text-2xl font-bold text-gray-800 mb-1">{{ action }} Item</h1>
-    <p class="text-sm text-gray-400 mb-8">Fill in the details below and submit.</p>
+    <div class="mb-5">
+        <h1 class="text-3xl font-extrabold tracking-tight">{{ action }} task</h1>
+        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            {% if action == 'Create' %}What needs doing?{% else %}Update the details below.{% endif %}
+        </p>
+    </div>
 
-    <form method="POST" class="space-y-6">
+    <form method="post" class="card animate-fade-up space-y-5 p-6 sm:p-8" novalidate>
         {% csrf_token %}
 
-        {% for field in form %}
-        <div class="flex flex-col space-y-1">
-            <label class="text-sm font-semibold text-gray-700">{{ field.label }}</label>
-            {{ field }}
-            {% if field.errors %}
-                <p class="text-xs text-red-500">{{ field.errors.0 }}</p>
+        {% if form.non_field_errors %}
+        <div class="rounded-xl border border-rose-300 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+            {{ form.non_field_errors }}
+        </div>
+        {% endif %}
+
+        {# Title #}
+        <div>
+            <label for="{{ form.title.id_for_label }}" class="field-label">
+                {{ form.label }} <span class="text-rose-500">*</span>
+            </label>
+            {{ form.title }}
+            {% if form.title.errors %}
+            <p class="mt-1.5 text-xs font-semibold text-rose-600">{{ form.title.errors.0 }}</p>
             {% endif %}
         </div>
-        {% endfor %}
 
-        <div class="flex space-x-4 pt-6 border-t border-gray-100">
-            <button type="submit"
-                    class="px-6 py-3 bg-green-600 text-white font-bold rounded-xl hover:bg-green-700 transition text-sm">
-                ✅ {{ action }} Item
+        {# Notes #}
+        <div>
+            <label for="{{ form.description.id_for_label }}" class="field-label">{{ form.description.label }}</label>
+            {{ form.description }}
+            {% if form.description.help_text %}
+            <p class="mt-1.5 text-xs text-slate-400">{{ form.description.help_text }}</p>
+            {% endif %}
+        </div>
+
+        {# Priority + due date #}
+        <div class="grid gap-5 sm:grid-cols-2">
+            <div>
+                <label for="{{ form.priority.id_for_label }}" class="field-label">{{ form.priority.label }}</label>
+                {{ form.priority }}
+            </div>
+            <div>
+                <label for="{{ form.due_date.id_for_label }}" class="field-label">{{ form.due_date.label }}</label>
+                {{ form.due_date }}
+                {% if form.due_date.errors %}
+                <p class="mt-1.5 text-xs font-semibold text-rose-600">{{ form.due_date.errors.0 }}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        {# Category #}
+        <div>
+            <label for="{{ form.category.id_for_label }}" class="field-label">{{ form.category.label }}</label>
+            {{ form.category }}
+            {% if form.category.help_text %}
+            <p class="mt-1.5 text-xs text-slate-400">{{ form.category.help_text }}</p>
+            {% endif %}
+        </div>
+
+        {# Completed #}
+        <label for="{{ form.completed.id_for_label }}"
+               class="flex cursor-pointer items-center gap-3 rounded-xl border border-slate-200 px-4 py-3
+                      transition hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800/50">
+            {{ form.completed }}
+            <span class="text-sm font-semibold">{{ form.completed.label }}</span>
+        </label>
+
+        {# Actions #}
+        <div class="flex flex-wrap gap-3 border-t border-slate-100 pt-5 dark:border-slate-800">
+            <button type="submit" class="btn-primary">
+                {% if action == 'Create' %}✓ Create task{% else %}✓ Save changes{% endif %}
             </button>
             <a href="{% if item %}{% url 'item_detail' item.pk %}{% else %}{% url 'item_list' %}{% endif %}"
-               class="px-6 py-3 border border-gray-300 text-gray-500 hover:text-gray-800 rounded-xl font-medium transition text-sm">
-                Cancel
-            </a>
+               class="btn-ghost">Cancel</a>
         </div>
     </form>
-
 </div>
 
 {% endblock %}
