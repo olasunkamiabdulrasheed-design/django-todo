@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 
+from django.contrib.messages import constants as messages
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -37,6 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',      # naturaltime / intcomma template filters
+    'list',                          # the tasks app
 ]
 
 MIDDLEWARE = [
@@ -54,7 +58,7 @@ ROOT_URLCONF = 'to_do.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -114,9 +118,35 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# ── Messages ──────────────────────────────────────────────────────────────────
+# Map Django's message levels onto Tailwind utility classes so base.html can
+# render each level with the right colour without a template-side if/elif chain.
+
+MESSAGE_TAGS = {
+    messages.DEBUG:   'bg-slate-100 border-slate-300 text-slate-700',
+    messages.INFO:    'bg-sky-50 border-sky-300 text-sky-800',
+    messages.SUCCESS: 'bg-emerald-50 border-emerald-300 text-emerald-800',
+    messages.WARNING: 'bg-amber-50 border-amber-300 text-amber-800',
+    messages.ERROR:   'bg-rose-50 border-rose-300 text-rose-800',
+}
+
+
+# ── App defaults ──────────────────────────────────────────────────────────────
+# Number of tasks shown per page in the task list view.
+TASKS_PER_PAGE = 8
+
+# Where to send users when a login is required (wired up but unused until
+# authentication is added).
+LOGIN_URL = 'admin:login'
