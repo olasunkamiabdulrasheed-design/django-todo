@@ -8,6 +8,7 @@
         {# Complete / reopen toggle #}
         <form method="post" action="{% url 'item_toggle' task.pk %}" class="pt-0.5">
             {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.get_full_path }}">
             <button type="submit"
                     title="{% if task.completed %}Reopen task{% else %}Mark as done{% endif %}"
                     class="grid h-6 w-6 shrink-0 place-items-center rounded-full border-2 transition
@@ -50,16 +51,21 @@
             {% endif %}
 
             <div class="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-400">
-                {% if task.due_date %}
-                    {% if task.is_overdue %}
-                    <span class="font-semibold text-rose-600 dark:text-rose-400">
-                        ⚠ Overdue by {{ task.days_left|cut:'-' }} day{{ task.days_left|cut:'-'|pluralize }}
-                    </span>
-                    {% elif task.is_due_today %}
-                    <span class="font-semibold text-amber-600 dark:text-amber-400">⏰ Due today</span>
+                {% if task.completed %}
+                    {# A finished task isn't "due in 0 days" — just show its date. #}
+                    {% if task.due_date %}
+                    <span>📅 Due {{ task.due_date|date:'j M Y' }}</span>
                     {% else %}
-                    <span>📅 Due in {{ task.days_left }} day{{ task.days_left|pluralize }}</span>
+                    <span>No due date</span>
                     {% endif %}
+                {% elif task.is_overdue %}
+                <span class="font-semibold text-rose-600 dark:text-rose-400">
+                    ⚠ Overdue by {{ task.days_left|cut:'-' }} day{{ task.days_left|cut:'-'|pluralize }}
+                </span>
+                {% elif task.days_left == 0 %}
+                <span class="font-semibold text-amber-600 dark:text-amber-400">⏰ Due today</span>
+                {% elif task.due_date %}
+                <span>📅 Due in {{ task.days_left }} day{{ task.days_left|pluralize }}</span>
                 {% else %}
                 <span>No due date</span>
                 {% endif %}
