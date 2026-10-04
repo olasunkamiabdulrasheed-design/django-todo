@@ -5,6 +5,9 @@
 
 {% block content %}
 
+{% url 'item_create' as add_url %}
+{% url 'item_list' as list_url %}
+
 {# ── Header ────────────────────────────────────────────────────────────── #}
 <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
     <div>
@@ -66,9 +69,9 @@
         {% include 'partials/task_card.html' with task=task %}
     {% empty %}
         {% if request.GET %}
-            {% include 'partials/empty_state.html' with icon='🔍' title='No matches' message='Nothing matched those filters. Try a different search or clear them.' action_url='/tasks/' action_label='Clear filters' %}
+            {% include 'partials/empty_state.html' with icon='🔍' title='No matches' message='Nothing matched those filters. Try a different search or clear them.' action_url=list_url action_label='Clear filters' %}
         {% else %}
-            {% include 'partials/empty_state.html' with icon='🗒️' title='No tasks yet' message='Your list is empty. Create the first task to get rolling.' action_url='/tasks/add/' action_label='Add a task' %}
+            {% include 'partials/empty_state.html' with icon='🗒️' title='No tasks yet' message='Your list is empty. Create the first task to get rolling.' action_url=add_url action_label='Add a task' %}
         {% endif %}
     {% endfor %}
 </div>
