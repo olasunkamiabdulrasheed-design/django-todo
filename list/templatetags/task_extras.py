@@ -1,10 +1,20 @@
 """Small template helpers used across the task templates."""
 
 from django import template
+from django.contrib.messages import constants as message_constants
 
 from list.filters import SORT_CHOICES
 
 register = template.Library()
+
+# Icon per Django message level.
+_MESSAGE_ICONS = {
+    message_constants.SUCCESS: '✓',
+    message_constants.ERROR: '!',
+    message_constants.WARNING: '!',
+    message_constants.INFO: 'ℹ',
+    message_constants.DEBUG: 'ℹ',
+}
 
 
 @register.simple_tag
@@ -19,6 +29,17 @@ def sort_url(request, value):
 @register.simple_tag
 def sort_options():
     return SORT_CHOICES
+
+
+@register.filter
+def message_icon(message):
+    """Return the glyph for a message, keyed on its level.
+
+    ``message.tags`` can't be used for this: ``settings.MESSAGE_TAGS`` replaces
+    the level name ("success", "error", …) with CSS classes, so a check like
+    ``'success' in message.tags`` never matches. The numeric level is stable.
+    """
+    return _MESSAGE_ICONS.get(getattr(message, 'level', None), 'ℹ')
 
 
 @register.filter
