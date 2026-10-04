@@ -94,15 +94,34 @@ class ItemFilterForm(forms.Form):
         widget=forms.Select(attrs={'class': SELECT_CLASSES}),
     )
 
+    def _cleaned_or_empty(self):
+        """Return per-field cleaned values, skipping any that don't validate.
+
+        Validating the form as a whole means a single bad parameter (say
+        ``?priority=bogus``) makes every *other* filter collapse silently and
+        the whole table comes back. Cleaning field-by-field keeps the filters
+        that do make sense.
+        """
+        if not self.is_bound:
+            return {}
+
+        cleaned = {}
+        for name, field in self.fields.items():
+            raw = self.data.get(name)
+            if raw in (None, ''):
+                continue
+            try:
+                cleaned[name] = field.clean(raw)
+            except forms.ValidationError:
+                continue
+        return cleaned
+
     def filter_queryset(self, queryset):
         """Apply the cleaned filters to ``queryset``."""
-        if not self.is_valid():
-            return queryset
-
         from django.db.models import Q
         from django.utils import timezone
 
-        data = self.cleaned_data
+        data = self._cleaned_or_empty()
 
         if data.get('q'):
             term = data['q']
