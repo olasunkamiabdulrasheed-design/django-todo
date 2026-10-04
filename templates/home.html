@@ -5,6 +5,8 @@
 
 {% block content %}
 
+{% url 'item_create' as add_url %}
+
 {# ── Hero ──────────────────────────────────────────────────────────────── #}
 <section class="animate-fade-up overflow-hidden rounded-3xl border border-slate-200
                 bg-gradient-to-br from-white via-white to-brand-50 p-8 shadow-sm
@@ -27,6 +29,7 @@
         <a href="{% url 'item_create' %}" class="btn-primary">
             <span class="text-base leading-none">+</span> Add your first task
         </a>
+        <a href="{% url 'focus' %}" class="btn-ghost">🎯 Focus on one thing</a>
         <a href="{% url 'item_list' %}" class="btn-ghost">Browse all tasks</a>
     </div>
 </section>
@@ -64,7 +67,7 @@
         {% for task in recent %}
             {% include 'partials/task_card.html' with task=task %}
         {% empty %}
-            {% include 'partials/empty_state.html' with icon='🎉' title='All clear' message='You have no open tasks. Add one to get started.' action_url='/tasks/add/' action_label='Add a task' %}
+            {% include 'partials/empty_state.html' with icon='🎉' title='All clear' message='You have no open tasks. Add one to get started.' action_url=add_url action_label='Add a task' %}
         {% endfor %}
     </div>
 </section>
