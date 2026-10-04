@@ -2,6 +2,7 @@
 
 from datetime import timedelta
 
+from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
@@ -168,3 +169,93 @@ class ItemViewTests(TestCase):
             Item.objects.create(title=f'Task {i}')
         response = self.client.get(reverse('item_list'))
         self.assertEqual(len(response.context['tasks']), 8)
+
+
+class ItemSaveTests(TestCase):
+    def test_update_fields_still_writes_completed_at(self):
+        # Regression: save(update_fields=['completed']) skipped the
+        # completed_at write because it wasn't in the list.
+        item = Item.objects.create(title='Track the timestamp')
+
+        item.completed = True
+        item.save(update_fields=['completed'])
+
+        item.refresh_from_db()
+        self.assertIsNotNone(item.completed_at)
+
+    def test_update_fields_still_clears_completed_at_when_reopened(self):
+        item = Item.objects.create(title='Reopen me', completed=True)
+
+        item.completed = False
+        item.save(update_fields=['completed'])
+
+        item.refresh_from_db()
+        self.assertIsNone(item.completed_at)
+
+
+class ToggleRedirectTests(TestCase):
+    """The toggle must return users where they acted, without becoming an
+    open-redirect gadget."""
+
+    def setUp(self):
+        self.item = Item.objects.create(title='Stay put')
+
+    def test_toggle_returns_to_the_supplied_page(self):
+        response = self.client.post(
+            reverse('item_toggle', args=[self.item.pk]),
+            {'next': reverse('item_list')},
+        )
+        self.assertRedirects(response, reverse('item_list'))
+
+    def test_toggle_ignores_an_offsite_next(self):
+        response = self.client.post(
+            reverse('item_toggle', args=[self.item.pk]),
+            {'next': 'https://evil.example.com/steal'},
+        )
+        self.assertRedirects(response, reverse('item_list'))
+
+    def test_toggle_ignores_a_scheme_relative_next(self):
+        response = self.client.post(
+            reverse('item_toggle', args=[self.item.pk]),
+            {'next': '//evil.example.com/steal'},
+        )
+        self.assertRedirects(response, reverse('item_list'))
+
+    def test_toggle_defaults_to_the_list(self):
+        response = self.client.post(reverse('item_toggle', args=[self.item.pk]))
+        self.assertRedirects(response, reverse('item_list'))
+
+
+class AdminBulkActionTests(TestCase):
+    def setUp(self):
+        self.admin_user = get_user_model().objects.create_superuser(
+            'admin', 'admin@example.com', 'password123',
+        )
+        self.client.force_login(self.admin_user)
+
+    def _run_action(self, action, *items):
+        return self.client.post(
+            reverse('admin:list_item_changelist'),
+            {'action': action, '_selected_action': [str(i.pk) for i in items]},
+            follow=True,
+        )
+
+    def test_mark_completed_sets_the_timestamp(self):
+        # Regression: the bulk action used queryset.update() and left
+        # completed_at NULL, contradicting the model's own invariant.
+        item = Item.objects.create(title='Bulk me')
+
+        self._run_action('mark_completed', item)
+
+        item.refresh_from_db()
+        self.assertTrue(item.completed)
+        self.assertIsNotNone(item.completed_at)
+
+    def test_mark_incomplete_clears_the_timestamp(self):
+        item = Item.objects.create(title='Bulk reopen', completed=True)
+
+        self._run_action('mark_incomplete', item)
+
+        item.refresh_from_db()
+        self.assertFalse(item.completed)
+        self.assertIsNone(item.completed_at)
