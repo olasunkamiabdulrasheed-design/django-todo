@@ -101,4 +101,12 @@ class Item(models.Model):
             self.completed_at = timezone.now()
         elif not self.completed:
             self.completed_at = None
+
+        # When a caller passes an explicit update_fields list, any field we
+        # just changed is silently dropped unless we add it back. An empty
+        # list is left alone so Django still rejects it.
+        update_fields = kwargs.get('update_fields')
+        if update_fields:
+            kwargs['update_fields'] = set(update_fields) | {'completed_at'}
+
         super().save(*args, **kwargs)
