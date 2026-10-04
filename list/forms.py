@@ -93,6 +93,23 @@ class ItemFilterForm(forms.Form):
         choices=[('', 'Any priority')] + Item.PRIORITY_CHOICES,
         widget=forms.Select(attrs={'class': SELECT_CLASSES}),
     )
+    category = forms.ChoiceField(
+        required=False,
+        choices=[],
+        widget=forms.Select(attrs={'class': SELECT_CLASSES}),
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        categories = list(
+            Item.objects.exclude(category='')
+            .order_by('category')
+            .values_list('category', flat=True)
+            .distinct()
+        )
+        self.fields['category'].choices = [('', 'Any category')] + [
+            (category, category) for category in categories
+        ]
 
     def _cleaned_or_empty(self):
         """Return per-field cleaned values, skipping any that don't validate.
@@ -144,5 +161,8 @@ class ItemFilterForm(forms.Form):
 
         if data.get('priority'):
             queryset = queryset.filter(priority=data['priority'])
+
+        if data.get('category'):
+            queryset = queryset.filter(category__iexact=data['category'])
 
         return queryset

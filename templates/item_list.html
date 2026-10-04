@@ -23,7 +23,7 @@
 
 {# ── Search / filter toolbar ───────────────────────────────────────────── #}
 <form method="get" class="card mb-6 p-4">
-    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
         <div class="lg:col-span-2">
             <label for="{{ form.q.id_for_label }}" class="field-label">Search</label>
             {{ form.q }}
@@ -35,6 +35,10 @@
         <div>
             <label for="{{ form.priority.id_for_label }}" class="field-label">Priority</label>
             {{ form.priority }}
+        </div>
+        <div>
+            <label for="{{ form.category.id_for_label }}" class="field-label">Category</label>
+            {{ form.category }}
         </div>
     </div>
 

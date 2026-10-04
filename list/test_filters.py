@@ -82,3 +82,12 @@ class FilterRobustnessTests(TestCase):
         response = self.client.get(reverse('item_list'), {'status': 'bogus'})
 
         self.assertEqual(response.context['total_count'], 2)
+
+    def test_category_filter_shows_only_matching_tasks(self):
+        Item.objects.create(title='Work task', category='Work')
+        Item.objects.create(title='Personal task', category='Personal')
+
+        response = self.client.get(reverse('item_list'), {'category': 'Work'})
+
+        self.assertContains(response, 'Work task')
+        self.assertNotContains(response, 'Personal task')
