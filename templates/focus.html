@@ -1,0 +1,188 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Focus — TaskFlow{% endblock %}
+{% block content %}
+
+{% url 'item_create' as add_url %}
+
+<div class="mx-auto max-w-2xl">
+
+    {# ── Header ────────────────────────────────────────────────────────── #}
+    <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <div>
+            <h1 class="text-3xl font-extrabold tracking-tight">Focus</h1>
+            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                One task. Nothing else competing for attention.
+            </p>
+        </div>
+        {% if open_count %}
+        <span class="chip bg-slate-100 text-slate-600 ring-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700">
+            {{ remaining }} of {{ open_count }} still open
+        </span>
+        {% endif %}
+    </div>
+
+    {% if task %}
+
+    {# ── The recommendation ────────────────────────────────────────────── #}
+    <article class="card animate-fade-up overflow-hidden">
+        <div class="h-1.5 w-full
+            {% if task.priority == 'high' %}bg-rose-500
+            {% elif task.priority == 'low' %}bg-sky-500
+            {% else %}bg-amber-500{% endif %}"></div>
+
+        <div class="p-6 sm:p-8">
+
+            <span class="chip bg-brand-100 text-brand-700 ring-brand-200 dark:bg-brand-500/15 dark:text-brand-100 dark:ring-brand-500/30">
+                Do this next
+            </span>
+
+            <h2 class="mt-4 text-2xl font-extrabold tracking-tight sm:text-3xl">
+                {{ task.title }}
+            </h2>
+
+            {# Why this task — a suggestion you can't explain is one you won't trust #}
+            {% if reasons %}
+            <ul class="mt-3 flex flex-wrap gap-2">
+                {% for reason in reasons %}
+                <li class="chip bg-amber-100 text-amber-700 ring-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:ring-amber-500/30">
+                    {{ reason }}
+                </li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+
+            {% if task.description %}
+            <p class="mt-4 whitespace-pre-wrap text-[15px] leading-relaxed text-slate-600 dark:text-slate-300">{{ task.description }}</p>
+            {% endif %}
+
+            <dl class="mt-5 grid grid-cols-2 gap-4 border-y border-slate-100 py-4 text-sm sm:grid-cols-3 dark:border-slate-800">
+                <div>
+                    <dt class="text-xs font-semibold uppercase tracking-wide text-slate-400">Priority</dt>
+                    <dd class="mt-1 font-medium">{{ task.get_priority_display }}</dd>
+                </div>
+                <div>
+                    <dt class="text-xs font-semibold uppercase tracking-wide text-slate-400">Due</dt>
+                    <dd class="mt-1 font-medium">
+                        {% if task.due_date %}{{ task.due_date|date:'j M Y' }}{% else %}—{% endif %}
+                    </dd>
+                </div>
+                <div>
+                    <dt class="text-xs font-semibold uppercase tracking-wide text-slate-400">Category</dt>
+                    <dd class="mt-1 font-medium">{{ task.category|default:'—' }}</dd>
+                </div>
+            </dl>
+
+            {# ── Actions ───────────────────────────────────────────────────── #}
+            <div class="mt-6 flex flex-wrap items-center gap-3">
+                <form method="post" action="{% url 'item_toggle' task.pk %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{% url 'focus' %}">
+                    <button type="submit" class="btn-primary">✓ Done — next task</button>
+                </form>
+
+                <a href="{% url 'focus' %}?skip={{ skip_param }}" class="btn-ghost">Skip for now</a>
+
+                <a href="{% url 'item_detail' task.pk %}"
+                   class="text-sm font-semibold text-slate-400 transition hover:text-slate-700 dark:hover:text-slate-200">
+                    Open details
+                </a>
+            </div>
+        </div>
+    </article>
+
+    {# ── Focus timer ───────────────────────────────────────────────────── #}
+    <section class="card mt-6 p-6" data-timer-root>
+        <div class="flex flex-wrap items-center justify-between gap-4">
+            <div>
+                <h2 class="text-xs font-semibold uppercase tracking-wide text-slate-400">Focus timer</h2>
+                <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                    25 minutes on this one task. Nothing else.
+                </p>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <span data-timer-display
+                      class="font-mono text-3xl font-bold tabular-nums tracking-tight">25:00</span>
+                <button type="button" data-timer-toggle class="btn-primary !px-4">Start</button>
+                <button type="button" data-timer-reset class="btn-ghost !px-4">Reset</button>
+            </div>
+        </div>
+    </section>
+
+    {% else %}
+
+    {# ── Nothing to do ─────────────────────────────────────────────────── #}
+    {% if open_count %}
+        {% include 'partials/empty_state.html' with icon='🙈' title='Nothing left to skip to' message='You have skipped everything open. Refresh to start the queue over, or add something new.' action_url=add_url action_label='Add a task' %}
+        <div class="mt-4 text-center">
+            <a href="{% url 'focus' %}" class="btn-ghost">Start over</a>
+        </div>
+    {% else %}
+        {% include 'partials/empty_state.html' with icon='🎉' title='You are all clear' message='Every task is done. Enjoy it — you have earned the quiet.' action_url=add_url action_label='Add a task' %}
+    {% endif %}
+
+    {% endif %}
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+{% if task %}
+<script>
+    // Pomodoro-style timer. Purely client-side — nothing is stored, so
+    // refreshing the page or finishing the task just resets the clock.
+    (function () {
+        var root = document.querySelector('[data-timer-root]');
+        if (!root) return;
+
+        var display = root.querySelector('[data-timer-display]');
+        var toggle = root.querySelector('[data-timer-toggle]');
+        var reset = root.querySelector('[data-timer-reset]');
+        var DURATION = 25 * 60;
+        var remaining = DURATION;
+        var ticking = null;
+
+        function render() {
+            var minutes = Math.floor(remaining / 60);
+            var seconds = remaining % 60;
+            display.textContent =
+                String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
+            display.classList.toggle('text-rose-600', remaining <= 60);
+            display.classList.toggle('dark:text-rose-400', remaining <= 60);
+        }
+
+        function stop() {
+            clearInterval(ticking);
+            ticking = null;
+            toggle.textContent = 'Start';
+        }
+
+        toggle.addEventListener('click', function () {
+            if (ticking) { stop(); return; }
+            if (remaining <= 0) return;
+
+            toggle.textContent = 'Pause';
+            ticking = setInterval(function () {
+                remaining -= 1;
+                render();
+                if (remaining <= 0) {
+                    stop();
+                    toggle.textContent = 'Done';
+                }
+            }, 1000);
+        });
+
+        reset.addEventListener('click', function () {
+            stop();
+            remaining = DURATION;
+            render();
+        });
+
+        render();
+    })();
+</script>
+{% endif %}
+{% endblock %}
